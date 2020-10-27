@@ -20,7 +20,7 @@ Group INDOCHAINA
 
 <h1>Preview</h1>
 <br>
-
+<img src="https://sv1.picz.in.th/images/2020/10/27/bw1ooa.png" width="800px" style="max-width:100%;">
 
 #  Member
 - 61070060     นายเด่นภูมิ ศรีเมือง   &nbsp;&nbsp;&nbsp;&nbsp;    <strong>GITHUB</strong> &nbsp;&nbsp; [Denpoom](https://github.com/Denpoom)
