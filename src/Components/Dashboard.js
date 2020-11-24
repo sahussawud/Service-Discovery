@@ -3,17 +3,10 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import { Container, Jumbotron, Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import BootstrapTable from "react-bootstrap-table-next";
-import ToolkitProvider, { ColumnToggle } from "react-bootstrap-table2-toolkit";
 import axios from "axios";
 
 class Dashboard extends Component {
-  testIcon = () => {
-    return (
-      <Link to="/Home">
-        <Button>Click me </Button>
-      </Link>
-    );
-  };
+  
 
   state = {
     shippingdata: [],
@@ -21,15 +14,36 @@ class Dashboard extends Component {
 
   componentDidMount() {
     axios
-      .get(`http://shipping-sop.herokuapp.com/shipping/orderItem/?format=json`)
+      .get(`http://shipping-sop.herokuapp.com/shipping/dashboard/1/?fbclid=IwAR0T7TDOCz8nmCVuIZzxYz-BiTIlOCJaxtT3H0wYbQC5Vq2NSldkjuYLZD0&format=json`)
       .then((res) => {
-        const shippingdata = res.data;
-        this.setState({ shippingdata });
-      });
+        res.data.map((item) => {
+          axios
+          .get(`http://shipping-sop.herokuapp.com/shipping/orderItem/description/${item.shippingid}/`)
+          .then((res) => {
+            const datashipping = {
+              'id': item.id,
+              'name' : item.carrier.name,
+              'reciever' : item.reciever,
+              'sender' : item.sender,
+              'shippingid' : item.shippingid,
+              'status' : res.data[0].status
+             }
+              const updatearray = [...this.state.shippingdata, datashipping]
+              this.setState({
+                shippingdata : updatearray
+              })
+
+
+          })
+          .catch((er) => console.log(er))
+        })
+      })
+      .catch((er) => console.log(er))
   }
 
+  
+
   render() {
-    const { ToggleList } = ColumnToggle;
     const columns = [
       {
         dataField: "id",
@@ -40,7 +54,15 @@ class Dashboard extends Component {
         text: "Transport",
       },
       {
-        dataField: "tracking",
+        dataField: "reciever",
+        text: "Reciever",
+      },
+      {
+        dataField: "sender",
+        text: "Sender",
+      },
+      {
+        dataField: "shippingid",
         text: "Tracking ID",
       },
       {
@@ -50,25 +72,25 @@ class Dashboard extends Component {
       {
         dataField: "action",
         text: "Actions",
+        formatter: (rowContent, row, formatExtraData) => {
+          return (
+            <Link to= {{
+              pathname: '/Home',
+              idShipping :{
+                id: row.shippingid
+              }
+            }}>
+              <Button>Check</Button>
+            </Link> 
+          )
+        }
       },
     ];
 
-    const products = [
-      {
-        id: 1,
-        name: "gggggggggggg",
-        tracking: "TH123456789",
-        status: "Process",
-        action: this.testIcon(),
-      },
-      {
-        id: 2,
-        name: "fffffffffff",
-        tracking: "TH123456789",
-        status: "Finish",
-        action: this.testIcon(),
-      },
-    ];
+    const countOrdered = this.state.shippingdata.filter(item => item.status == 'Ordered')
+    const countShipped = this.state.shippingdata.filter(item => item.status == 'Shipped')
+    const countReady = this.state.shippingdata.filter(item => item.status == 'Ready')
+    const countDelivered= this.state.shippingdata.filter(item => item.status == 'Delivered')
 
     return (
       <div>
@@ -89,7 +111,7 @@ class Dashboard extends Component {
                   </Card.Title>
                   <Card.Text className="py-3">
                     <p className="display-4 float-right font-weight-bold text-white">
-                      21
+                      {countOrdered.length}
                     </p>
                   </Card.Text>
                 </Card.Body>
@@ -107,7 +129,7 @@ class Dashboard extends Component {
                   </Card.Title>
                   <Card.Text className="py-3">
                     <p className="display-4 float-right font-weight-bold text-white">
-                      21
+                      {countShipped.length}
                     </p>
                   </Card.Text>
                 </Card.Body>
@@ -119,13 +141,13 @@ class Dashboard extends Component {
                 <Card.Body>
                   <Card.Title className="py-3">
                     <p className="h2 text-uppercase text-white font-weight-bold">
-                      Problem
+                      Ready
                     </p>
                     <hr />
                   </Card.Title>
                   <Card.Text className="py-3">
                     <p className="display-4 float-right font-weight-bold text-white">
-                      21
+                      {countReady.length}
                     </p>
                   </Card.Text>
                 </Card.Body>
@@ -143,7 +165,7 @@ class Dashboard extends Component {
                   </Card.Title>
                   <Card.Text className="py-3">
                     <p className="display-4 float-right font-weight-bold text-white">
-                      21
+                      {countDelivered.length}
                     </p>
                   </Card.Text>
                 </Card.Body>
@@ -151,7 +173,7 @@ class Dashboard extends Component {
             </div>
           </div>
           <hr />
-          <Container>
+          <Container fluid>
             <Jumbotron
               className="bg-white shadow-lg"
               style={{ borderRadius: 30, backgroundColor: "gray" }}
@@ -166,7 +188,7 @@ class Dashboard extends Component {
                 }}
                 headerClasses="h3 border-5"
                 keyField="id"
-                data={products}
+                data={this.state.shippingdata}
                 columns={columns}
               />
             </Jumbotron>
